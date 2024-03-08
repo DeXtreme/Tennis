@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: tennis_api
+    ports:
+      - "80:8000"
+    volumes:
+      - ./src:/api
+    env_file:
+      - .env/api.env
+      - .env/db.env
+    depends_on:
+      - db
+      - redis
+  
+  db:
+    image: postgres:14-bullseye
+    container_name: tennis_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env/db.env
+  
+  redis:
+    image: redis:6.2-bullseye
+    container_name: tennis_redis
+
+volumes:
+  postgres_data:
+    
