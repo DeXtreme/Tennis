@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'drf_spectacular',
-    'drf_standardized_errors'
+    'drf_standardized_errors',
+    'accounts'
 ]
 
 MIDDLEWARE = [
