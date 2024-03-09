@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -10,9 +11,11 @@ from drf_spectacular.utils import extend_schema
 
 from . import serializers,models
 
-class AccountViewSet(GenericViewSet):
+class AccountViewSet(GenericViewSet,
+                     RetrieveModelMixin):
 
     queryset = models.Account.objects.all()
+    serializer_class = serializers.AccountSerializer
     lookup_field = "account_id"
 
     def get_permissions(self):
@@ -21,7 +24,7 @@ class AccountViewSet(GenericViewSet):
         return super().get_permissions()
 
     
-    extend_schema(
+    @extend_schema(
         request=serializers.CreateAccountSerializer,
         responses={"201":""},
         summary="Create Account",
@@ -42,7 +45,7 @@ class AccountViewSet(GenericViewSet):
         return Response(status=status.HTTP_201_CREATED)
     
     
-    extend_schema(
+    @extend_schema(
         request=serializers.RetrieveTokenSerializer,
         responses=serializers.TokenResponseSerializer,
         summary="Retrieve token",
@@ -76,7 +79,7 @@ class AccountViewSet(GenericViewSet):
         return Response(data,status=status.HTTP_200_OK)
     
 
-    extend_schema(
+    @extend_schema(
         request=serializers.RefreshTokenSerializer,
         responses=serializers.TokenResponseSerializer,
         summary="Refresh token",
@@ -107,15 +110,14 @@ class AccountViewSet(GenericViewSet):
         return Response(data,status=status.HTTP_200_OK)
         
     
-    extend_schema(
+    @extend_schema(
         responses=serializers.AccountSerializer,
-        summary="Retrieve Account Details",
+        summary="Retrieve Account Details"
     )
     def retrieve(self, request, *args, **kwargs):
-        account = self.get_object()
-        serializer = serializers.AccountSerializer(account)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        user = request.user
+        self.queryset = models.Account.objects.filter(user=user)
+        return super().retrieve(request, *args, **kwargs)
 
     
 
