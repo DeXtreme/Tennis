@@ -1,0 +1,714 @@
+openapi: 3.0.3
+info:
+  title: Tennis API
+  version: 1.0.0
+  description: The API for the tennis court booking API
+paths:
+  /accounts/:
+    post:
+      operationId: accounts_create
+      summary: Create Account
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccount'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateAccount'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateAccount'
+        required: true
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsCreateErrorResponse400'
+          description: ''
+        '201':
+          description: No response body
+  /accounts/{account_id}/:
+    get:
+      operationId: accounts_retrieve
+      summary: Retrieve Account Details
+      parameters:
+      - in: path
+        name: account_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this account.
+        required: true
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsRetrieveErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: ''
+  /accounts/token/:
+    post:
+      operationId: accounts_token_create
+      summary: Retrieve token
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetrieveToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RetrieveToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RetrieveToken'
+        required: true
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsTokenCreateErrorResponse400'
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+          description: ''
+  /accounts/token/refresh/:
+    post:
+      operationId: accounts_token_refresh_create
+      summary: Refresh token
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+        required: true
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsTokenRefreshCreateErrorResponse400'
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+          description: ''
+components:
+  schemas:
+    Account:
+      type: object
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+          maxLength: 50
+        last_name:
+          type: string
+          maxLength: 50
+      required:
+      - email
+      - first_name
+      - last_name
+    AccountsCreateEmailErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - email
+          type: string
+          description: '* `email` - email'
+        code:
+          enum:
+          - blank
+          - invalid
+          - 'null'
+          - null_characters_not_allowed
+          - required
+          - surrogate_characters_not_allowed
+          type: string
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    AccountsCreateError:
+      oneOf:
+      - $ref: '#/components/schemas/AccountsCreateNonFieldErrorsErrorComponent'
+      - $ref: '#/components/schemas/AccountsCreateEmailErrorComponent'
+      - $ref: '#/components/schemas/AccountsCreateFirstNameErrorComponent'
+      - $ref: '#/components/schemas/AccountsCreateLastNameErrorComponent'
+      - $ref: '#/components/schemas/AccountsCreatePasswordErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/AccountsCreateNonFieldErrorsErrorComponent'
+          email: '#/components/schemas/AccountsCreateEmailErrorComponent'
+          first_name: '#/components/schemas/AccountsCreateFirstNameErrorComponent'
+          last_name: '#/components/schemas/AccountsCreateLastNameErrorComponent'
+          password: '#/components/schemas/AccountsCreatePasswordErrorComponent'
+    AccountsCreateErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/AccountsCreateValidationError'
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/AccountsCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    AccountsCreateFirstNameErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - first_name
+          type: string
+          description: '* `first_name` - first_name'
+        code:
+          enum:
+          - blank
+          - invalid
+          - 'null'
+          - null_characters_not_allowed
+          - required
+          - surrogate_characters_not_allowed
+          type: string
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    AccountsCreateLastNameErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - last_name
+          type: string
+          description: '* `last_name` - last_name'
+        code:
+          enum:
+          - blank
+          - invalid
+          - 'null'
+          - null_characters_not_allowed
+          - required
+          - surrogate_characters_not_allowed
+          type: string
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    AccountsCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+          - invalid
+          type: string
+          description: '* `invalid` - invalid'
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    AccountsCreatePasswordErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - password
+          type: string
+          description: '* `password` - password'
+        code:
+          enum:
+          - blank
+          - invalid
+          - no_number
+          - no_uppercase
+          - 'null'
+          - null_characters_not_allowed
+          - required
+          - surrogate_characters_not_allowed
+          - too_short
+          type: string
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `no_number` - no_number
+            * `no_uppercase` - no_uppercase
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+            * `too_short` - too_short
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    AccountsCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountsCreateError'
+      required:
+      - errors
+      - type
+    AccountsRetrieveErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+    AccountsTokenCreateEmailErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - email
+          type: string
+          description: '* `email` - email'
+        code:
+          enum:
+          - blank
+          - invalid
+          - 'null'
+          - null_characters_not_allowed
+          - required
+          - surrogate_characters_not_allowed
+          type: string
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    AccountsTokenCreateError:
+      oneOf:
+      - $ref: '#/components/schemas/AccountsTokenCreateNonFieldErrorsErrorComponent'
+      - $ref: '#/components/schemas/AccountsTokenCreateEmailErrorComponent'
+      - $ref: '#/components/schemas/AccountsTokenCreatePasswordErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/AccountsTokenCreateNonFieldErrorsErrorComponent'
+          email: '#/components/schemas/AccountsTokenCreateEmailErrorComponent'
+          password: '#/components/schemas/AccountsTokenCreatePasswordErrorComponent'
+    AccountsTokenCreateErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/AccountsTokenCreateValidationError'
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/AccountsTokenCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    AccountsTokenCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+          - invalid
+          type: string
+          description: '* `invalid` - invalid'
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    AccountsTokenCreatePasswordErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - password
+          type: string
+          description: '* `password` - password'
+        code:
+          enum:
+          - blank
+          - invalid
+          - 'null'
+          - null_characters_not_allowed
+          - required
+          - surrogate_characters_not_allowed
+          type: string
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    AccountsTokenCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountsTokenCreateError'
+      required:
+      - errors
+      - type
+    AccountsTokenRefreshCreateError:
+      oneOf:
+      - $ref: '#/components/schemas/AccountsTokenRefreshCreateNonFieldErrorsErrorComponent'
+      - $ref: '#/components/schemas/AccountsTokenRefreshCreateRefreshErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/AccountsTokenRefreshCreateNonFieldErrorsErrorComponent'
+          refresh: '#/components/schemas/AccountsTokenRefreshCreateRefreshErrorComponent'
+    AccountsTokenRefreshCreateErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/AccountsTokenRefreshCreateValidationError'
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/AccountsTokenRefreshCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    AccountsTokenRefreshCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+          - invalid
+          type: string
+          description: '* `invalid` - invalid'
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    AccountsTokenRefreshCreateRefreshErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - refresh
+          type: string
+          description: '* `refresh` - refresh'
+        code:
+          enum:
+          - blank
+          - invalid
+          - 'null'
+          - null_characters_not_allowed
+          - required
+          - surrogate_characters_not_allowed
+          type: string
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    AccountsTokenRefreshCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountsTokenRefreshCreateError'
+      required:
+      - errors
+      - type
+    ClientErrorEnum:
+      enum:
+      - client_error
+      type: string
+      description: '* `client_error` - Client Error'
+    CreateAccount:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        password:
+          type: string
+      required:
+      - email
+      - first_name
+      - last_name
+      - password
+    Error401:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode401Enum'
+        detail:
+          type: string
+        attr:
+          type: string
+          nullable: true
+      required:
+      - attr
+      - code
+      - detail
+    Error404:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode404Enum'
+        detail:
+          type: string
+        attr:
+          type: string
+          nullable: true
+      required:
+      - attr
+      - code
+      - detail
+    ErrorCode401Enum:
+      enum:
+      - authentication_failed
+      - not_authenticated
+      type: string
+      description: |-
+        * `authentication_failed` - Authentication Failed
+        * `not_authenticated` - Not Authenticated
+    ErrorCode404Enum:
+      enum:
+      - not_found
+      type: string
+      description: '* `not_found` - Not Found'
+    ErrorResponse401:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ClientErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error401'
+      required:
+      - errors
+      - type
+    ErrorResponse404:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ClientErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error404'
+      required:
+      - errors
+      - type
+    ParseError:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/ParseErrorCodeEnum'
+        detail:
+          type: string
+        attr:
+          type: string
+          nullable: true
+      required:
+      - attr
+      - code
+      - detail
+    ParseErrorCodeEnum:
+      enum:
+      - parse_error
+      type: string
+      description: '* `parse_error` - Parse Error'
+    ParseErrorResponse:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ClientErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParseError'
+      required:
+      - errors
+      - type
+    RefreshToken:
+      type: object
+      properties:
+        refresh:
+          type: string
+      required:
+      - refresh
+    RetrieveToken:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+      - email
+      - password
+    TokenResponse:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    ValidationErrorEnum:
+      enum:
+      - validation_error
+      type: string
+      description: '* `validation_error` - Validation Error'
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
