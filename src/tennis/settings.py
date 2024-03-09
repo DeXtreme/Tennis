@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_spectacular',
     'drf_standardized_errors',
-    'accounts'
+    'accounts',
+    'courts',
 ]
 
 MIDDLEWARE = [
