@@ -157,6 +157,114 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenResponse'
           description: ''
+  /courts/:
+    get:
+      operationId: courts_list
+      summary: List all courts
+      tags:
+      - courts
+      security:
+      - jwtAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourtsListErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourtList'
+          description: ''
+  /courts/{court_id}/:
+    get:
+      operationId: courts_retrieve
+      summary: Retrive court
+      parameters:
+      - in: path
+        name: court_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this court.
+        required: true
+      tags:
+      - courts
+      security:
+      - jwtAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourtsRetrieveErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Court'
+          description: ''
 components:
   schemas:
     Account:
@@ -556,11 +664,80 @@ components:
       required:
       - errors
       - type
+    Booked:
+      type: object
+      properties:
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+      required:
+      - end_time
+      - start_time
     ClientErrorEnum:
       enum:
       - client_error
       type: string
       description: '* `client_error` - Client Error'
+    Court:
+      type: object
+      properties:
+        court_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 100
+        location:
+          type: string
+          maxLength: 100
+        open:
+          type: string
+          format: time
+        close:
+          type: string
+          format: time
+        booked:
+          type: array
+          items:
+            $ref: '#/components/schemas/Booked'
+      required:
+      - booked
+      - close
+      - location
+      - name
+      - open
+    CourtList:
+      type: object
+      properties:
+        court_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 100
+        location:
+          type: string
+          maxLength: 100
+      required:
+      - location
+      - name
+    CourtsListErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+    CourtsRetrieveErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
     CreateAccount:
       type: object
       properties:
