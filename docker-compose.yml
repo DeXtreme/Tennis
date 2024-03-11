@@ -16,6 +16,20 @@ services:
       - db
       - redis
   
+  worker:
+    build: .
+    container_name: tennis_worker
+    volumes:
+      - ./src:/api
+    env_file:
+      - .env/api.env
+      - .env/db.env
+    command: /bin/sh -c "celery -A tennis worker -B --loglevel INFO"
+    depends_on:
+      - api
+      - db
+      - redis
+  
   db:
     image: postgres:14-bullseye
     container_name: tennis_db
