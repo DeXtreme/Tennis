@@ -1,17 +1,13 @@
 from rest_framework import serializers
 
-from .models import Court,Booking
+from bookings.serializers import BookedSerializer
+from .models import Court
 
 class CourtListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Court
         fields = ["court_id", "name", "location"]
 
-
-class BookedSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Booking
-        fields = ["start_time", "end_time"]
 
 
 class CourtSerializer(serializers.ModelSerializer):

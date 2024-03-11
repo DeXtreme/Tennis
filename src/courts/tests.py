@@ -1,12 +1,16 @@
 from django.urls import reverse
-from datetime import time,datetime
+from datetime import time
 from django.utils import timezone
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITestCase
 
+
+from accounts.models import Account
+from bookings.models import Booking
 from . import models
+
 
 class CourtsViewSetTestCase(APITestCase):
 
@@ -15,7 +19,7 @@ class CourtsViewSetTestCase(APITestCase):
 
         cls.user = User.objects.create_user(username="test@email.com",
                                         password="Test_password1")
-        cls.account = models.Account.objects.create(user=cls.user,
+        cls.account = Account.objects.create(user=cls.user,
                                                     first_name="first",
                                                     last_name="last")
         
@@ -24,7 +28,7 @@ class CourtsViewSetTestCase(APITestCase):
                                                 open=time(8,0),
                                                 close=time(16,0))
 
-        cls.booking = models.Booking.objects.create(court=cls.court,
+        cls.booking = Booking.objects.create(court=cls.court,
                                                     account=cls.account,
                                                     start_time=timezone.now(),
                                                     end_time=timezone.now(),
@@ -82,4 +86,6 @@ class CourtsViewSetTestCase(APITestCase):
 
         self.assertIn("start_time",booked)
         self.assertIn("end_time",booked)
-        
+     
+
+

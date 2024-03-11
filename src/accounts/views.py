@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema
 
+from bookings.serializers import BookingSerializer
 from . import serializers,models
 
 class AccountViewSet(GenericViewSet,
@@ -118,6 +119,22 @@ class AccountViewSet(GenericViewSet,
         user = request.user
         self.queryset = models.Account.objects.filter(user=user)
         return super().retrieve(request, *args, **kwargs)
+
+
+    @extend_schema(
+        responses=BookingSerializer,
+        summary="Retrieve Account Bookings"
+    )
+    @action(["GET"], detail=True, url_name="bookings-list",url_path="bookings")
+    def list_bookings(self, request, *args, **kwargs):
+        user = request.user
+        self.queryset = models.Account.objects.filter(user=user)
+        account = self.get_object()
+
+        serializer = BookingSerializer(account.bookings, many=True)
+
+        return Response(serializer.data)
+
 
     
 

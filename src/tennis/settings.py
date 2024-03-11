@@ -40,6 +40,7 @@ except KeyError:
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
     'drf_standardized_errors',
     'accounts',
     'courts',
+    'bookings'
 ]
 
 MIDDLEWARE = [
@@ -108,6 +110,15 @@ try:
             "LOCATION": f"redis://{os.getenv('REDIS_HOST')}",
         }
     }
+
+    CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(os.getenv('REDIS_HOST'), 6379)],
+        },
+    },
+}
 except KeyError as e:
     raise ImproperlyConfigured(f"REDIS_HOST environment variable is required")
 
