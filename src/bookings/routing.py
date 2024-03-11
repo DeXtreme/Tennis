@@ -3,5 +3,5 @@ from . import consumers
 
 
 urlpatterns = [
-    path("", consumers.BookingsConsumer.as_asgi(), name="bookings-ws")
+    path("ws/bookings", consumers.BookingsConsumer.as_asgi(), name="bookings-ws")
 ]

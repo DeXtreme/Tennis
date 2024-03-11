@@ -17,10 +17,11 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tennis.settings')
 asgi_application = get_asgi_application()
 
 from bookings import routing
+from .middleware import JwtAuthMiddlewareStack
 
 application = ProtocolTypeRouter({
     "http": asgi_application,
     "websocket": AllowedHostsOriginValidator(
-        AuthMiddlewareStack(URLRouter(routing.urlpatterns))
+        JwtAuthMiddlewareStack(URLRouter(routing.urlpatterns))
     )
 })
