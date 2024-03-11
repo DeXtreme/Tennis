@@ -37,7 +37,7 @@ class AccountViewSet(GenericViewSet,
 
         data = serializer.validated_data
 
-        user = User.objects.create_user(data["email"], data["password"])
+        user = User.objects.create_user(data["email"],password=data["password"])
 
         account = models.Account.objects.create(user=user,
                                                 first_name=data["first_name"],

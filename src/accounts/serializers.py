@@ -27,6 +27,8 @@ class CreateAccountSerializer(serializers.Serializer):
                     self.fail("no_uppercase")
                 elif not re.search(r"[0-9]", data):
                     self.fail("no_number")
+            
+            return data
 
     email = serializers.EmailField()
     first_name = serializers.CharField()
