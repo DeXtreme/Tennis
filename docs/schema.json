@@ -95,6 +95,70 @@ paths:
               schema:
                 $ref: '#/components/schemas/Account'
           description: ''
+  /accounts/{account_id}/bookings/:
+    get:
+      operationId: accounts_bookings_retrieve
+      summary: Retrieve Account Bookings
+      parameters:
+      - in: path
+        name: account_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this account.
+        required: true
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsBookingsRetrieveErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
   /accounts/token/:
     post:
       operationId: accounts_token_create
@@ -204,7 +268,7 @@ paths:
   /courts/{court_id}/:
     get:
       operationId: courts_retrieve
-      summary: Retrive court
+      summary: Retrieve court
       parameters:
       - in: path
         name: court_id
@@ -286,6 +350,13 @@ components:
       - email
       - first_name
       - last_name
+    AccountsBookingsRetrieveErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
     AccountsCreateEmailErrorComponent:
       type: object
       properties:
@@ -675,6 +746,30 @@ components:
           format: date-time
       required:
       - end_time
+      - start_time
+    Booking:
+      type: object
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+        court_name:
+          type: string
+        start_time:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - court_name
+      - created_at
+      - duration
       - start_time
     ClientErrorEnum:
       enum:
