@@ -35,8 +35,14 @@ the court after each game session.
    ```
    docker exec -it tennis_api python manage.py createsuperuser
    ```
-9. Access the API via `http://localhost`
-10. Aceess the admin panel via `http://localhost/admin`. Log in with the superuser credentials
+9. Access the API
+   ```
+   http://localhost
+   ```
+11. Aceess the admin panel. Log in with the superuser credentials
+    ```
+    http://localhost/admin
+    ```
 
 
 ## Documentation
