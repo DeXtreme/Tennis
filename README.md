@@ -12,18 +12,24 @@ the court after each game session.
 
 ## Installation
 1. Clone the repository
-2. In the `src` folder create a `.env` folder
+2. In the repo, create a `.env` folder
 3. In the `.env` folder. Create the `api.env` file.
-   ```
-   values
+   ```env
+   SECRET_KEY=<secret_key>
+   DEBUG=True
+   ALLOWED_HOSTS=*
+   REDIS_HOST=redis
+   POSTGRES_HOST=db
    ```
 5. In the `.env` folder. Create the `db.env` file.
+   ```env
+   POSTGRES_USER=<db username>
+   POSTGRES_PASSWORD=<db password>
+   POSTGRES_DB=<db name>
    ```
-   values
-   ```
-6. Navigate to the root folder and start the containers
+6. Navigate to the repo folder and start the containers in 
    ```bash
-   docker-compose up -d
+   docker-compose up
    ```
 8. Create a superuser to access the admin panel. Include an email address for notifications
    ```
@@ -31,6 +37,7 @@ the court after each game session.
    ```
 9. Access the API via `http://localhost`
 10. Aceess the admin panel via `http://localhost/admin`. Log in with the superuser credentials
+
 
 ## Documentation
 The documentation for the REST API can be accessed by serving the `index.html` located in the `docs` folder, for example, with
@@ -64,7 +71,7 @@ This message is used to book a court from a specified time for a specified durat
   "duration" : int
 }
 ```
-A successful booking generates a broadcast message with the following json format and sends notifications to admins and users
+A successful booking generates a broadcast message with the following json format and sends notifications to admins and users. Notifications are displayed in the console
 ```json
 {
   "booked" : {
@@ -81,7 +88,7 @@ This message is used to cancel a booking
   "booking_id" : <booking_id>
 }
 ```
-A successful cancellation generates a broadcast message with the following json format and sends notifications to admins and users
+A successful cancellation generates a broadcast message with the following json format and sends notifications to admins and users. Notifications are displayed in the console
 ```json
 {
   "cancelled" : {
