@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 from pathlib import Path
 from datetime import timedelta
+from celery.schedules import crontab
 from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -216,3 +217,22 @@ DRF_STANDARDIZED_ERRORS = {
 # Email
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "noreply@tennis.com"
+
+# Celery
+try:
+    CELERY_BROKER_URL = f"redis://{os.getenv('REDIS_HOST')}"
+    CELERY_RESULT_BACKEND = f"redis://{os.getenv('REDIS_HOST')}"
+    CELERY_TASK_TRACK_STARTED = True
+    CELERY_TASK_ACKS_LATE = True
+    CELERY_BEAT_SCHEDULE = {
+        'send_reminders': {
+            'task': 'bookings.tasks.send_reminders',
+            'schedule': crontab(minute=30),
+        },
+        'send_worker_reminders': {
+            'task': 'bookings.tasks.send_worker_reminders',
+            'schedule': crontab(),
+        },
+    }
+except KeyError as e:
+    raise ImproperlyConfigured(f"REDIS_HOST environment variable is required")
