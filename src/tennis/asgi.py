@@ -13,12 +13,13 @@ from channels.security.websocket import AllowedHostsOriginValidator
 from channels.auth import AuthMiddlewareStack
 from django.core.asgi import get_asgi_application
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tennis.settings')
+asgi_application = get_asgi_application()
+
 from bookings import routing
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tennis.settings')
-
 application = ProtocolTypeRouter({
-    "http": get_asgi_application(),
+    "http": asgi_application,
     "websocket": AllowedHostsOriginValidator(
         AuthMiddlewareStack(URLRouter(routing.urlpatterns))
     )

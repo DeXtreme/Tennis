@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'drf_standardized_errors',
     'accounts',
     'courts',
-    'bookings'
+    'bookings',
 ]
 
 MIDDLEWARE = [
@@ -160,6 +160,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = '/tmp/static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -211,3 +212,7 @@ SPECTACULAR_SETTINGS = {
 DRF_STANDARDIZED_ERRORS = {
     "ALLOWED_ERROR_STATUS_CODES": ["400", "401","404"]
 }
+
+# Email
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@tennis.com"
