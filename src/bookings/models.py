@@ -18,4 +18,4 @@ class Booking(models.Model):
 
 
     def __str__(self):
-        return f"<Booking:{self.booking_id}"
+        return f"<Booking:{self.booking_id} | {self.start_time} | {self.duration} hours>"

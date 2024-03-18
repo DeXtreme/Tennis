@@ -1,4 +1,3 @@
-import uuid
 from traceback import print_exc
 from datetime import timedelta
 from asgiref.sync import async_to_sync
@@ -121,24 +120,10 @@ class BookingsConsumer(JsonWebsocketConsumer):
                                                 start_time=start_time,
                                                 end_time=end_time,
                                                 duration=duration)
-        
-        serializer = serializers.BookedSerializer(booking)
-        sub = f"court_{court_id}"
-
-        details = {"booked": serializer.data}
 
         self.send_json({"status": "success"})
 
         
-        async_to_sync(self.channel_layer.group_send)(
-            sub, {
-                "type": "event",
-                "body": details
-            }
-        )
-        
-
-
     def cancel(self,content):
         serializer = serializers.ConsumerCancelSerializer(data=content)
         serializer.is_valid(raise_exception=True)
@@ -156,19 +141,10 @@ class BookingsConsumer(JsonWebsocketConsumer):
         
         booking.delete()
         
-        serializer = serializers.CancelledSerializer(booking)
-        sub = f"court_{court_id}"
 
-        details = {"cancelled": serializer.data}
-        
         self.send_json({"status": "success"})
 
-        async_to_sync(self.channel_layer.group_send)(
-            sub, {
-                "type": "event",
-                "body": details
-            }
-        )
+        
 
     def event(self,event):
         message = event["body"]

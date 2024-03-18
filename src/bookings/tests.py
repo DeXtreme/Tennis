@@ -1,4 +1,4 @@
-from datetime import time
+from datetime import time,timedelta
 from django.utils import timezone
 from django.urls import reverse
 from django.test import TransactionTestCase
@@ -82,11 +82,11 @@ class BookingsConsumerTestCase(TransactionTestCase):
         })
 
         response = await self.communicator.receive_json_from()
-
+        start_time = (timezone.now() + timedelta(days=1)).replace(hour=12)
         await self.communicator.send_json_to({
             "type":"book",
             "court_id": str(self.court.court_id),
-            "start_time": "2024-03-12 10:00",
+            "start_time": str(start_time),
             "duration": 1
         })
 

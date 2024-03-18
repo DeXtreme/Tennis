@@ -1,52 +1,112 @@
-from django.db.models.signals import post_save,post_delete
+from datetime import timedelta,datetime
+from django.db.models.signals import post_save,post_delete,pre_save
 from django.dispatch import receiver
-from django.core.mail import send_mail
-from django.contrib.auth.models import User
-from django.conf import settings
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
-from . import models
+
+from . import models,tasks,serializers
+
+
+@receiver(pre_save, sender=models.Booking)
+def send_messages_before_save(sender, instance, **kwargs):
+    new_booking = instance
+
+    try:
+        old_booking = models.Booking.objects.get(booking_id=new_booking.booking_id)
+        
+        channel_layer = get_channel_layer()
+
+        serializer = serializers.CancelledSerializer(old_booking)
+        sub = f"court_{old_booking.court.court_id}"
+
+        details = {"cancelled": serializer.data}
+        async_to_sync(channel_layer.group_send)(
+            sub, {
+                "type": "event",
+                "body": details
+            }
+        )
+        
+    except models.Booking.DoesNotExist:
+        pass
+
+
 
 @receiver(post_save, sender=models.Booking)
-def send_email_on_save(sender, instance, created, **kwargs):
+def send_messages_on_save(sender, instance, created, **kwargs):
 
     booking = instance
     
-    from_email = settings.DEFAULT_FROM_EMAIL
-    recipient_list = [booking.account.user.username] 
     if created: 
-        subject = 'Booking Confirmation'
-        message = f"You have booked {booking.court.name} from {booking.start_time} for {booking.duration} hours"
+        tasks.send_confirmation.apply_async(args=(
+            booking.account.user.username,
+            booking.court.name,
+            booking.start_time,
+            booking.duration
+        ))
+
+        tasks.send_reminders.apply_async(args=(
+            booking.account.user.username,
+            booking.court.name,
+            booking.start_time,
+            booking.duration
+        ), eta=booking.start_time - timedelta(hours=12))
+
         
-        admins = User.objects.filter(is_superuser=True,email__isnull=False)
-        admin_email_list = [admin.email for admin in admins]
-
-        subject = 'New Booking'
-        message = f"Account:{booking.account} Booking:{booking}"
-        from_email = settings.DEFAULT_FROM_EMAIL
-
-        send_mail(subject, message, from_email, admin_email_list)
+        tasks.send_admin_notification.apply_async(args=[str(booking)])
+   
     else:
-        subject = 'Booking Modification'
-        message = f"Your booking has been changed to {booking.court.name} from {booking.start_time} for {booking.duration} hours"
-    
-    send_mail(subject, message, from_email, recipient_list)
+        tasks.send_booking_change.apply_async(args=(
+            booking.account.user.username,
+            booking.court.name,
+            booking.start_time,
+            booking.duration
+        ))
 
+    tasks.send_worker_reminders.apply_async(
+        args=(str(booking.court.court_id),booking.court.name),
+        eta=datetime.now()+timedelta(minutes=2)
+    )
+
+    channel_layer = get_channel_layer()
+    
+    serializer = serializers.BookedSerializer(booking)
+    sub = f"court_{booking.court.court_id}"
+
+    details = {"booked": serializer.data}
+    async_to_sync(channel_layer.group_send)(
+        sub, {
+            "type": "event",
+            "body": details
+        }
+    )
+        
 
 @receiver(post_delete, sender=models.Booking)
-def send_email_on_delete(sender, instance, **kwargs):
+def send_messages_on_delete(sender, instance, **kwargs):
 
     booking = instance
-    from_email = settings.DEFAULT_FROM_EMAIL
+    
+    tasks.send_cancellation.apply_async(args=(
+            booking.account.user.username,
+            booking.court.name,
+            booking.start_time,
+            booking.duration
+    ))
+    
 
-    subject = 'Booking Cancellation'
-    message = f"You have cancelled your booking for {booking.court.name} from {booking.start_time} for {booking.duration} hours"
-    recipient_list = [booking.account.user.username] 
+    tasks.send_cancel_admin_notification.apply_async(args=[str(booking)])
 
-    send_mail(subject, message, from_email, recipient_list)
+    channel_layer = get_channel_layer()
 
-    admins = User.objects.filter(is_superuser=True,email__isnull=False)
-    admin_email_list = [admin.email for admin in admins]
-    subject = 'New Cancellation'
-    message = f"Booking:{booking}"
+    serializer = serializers.CancelledSerializer(booking)
+    sub = f"court_{booking.court.court_id}"
 
-    send_mail(subject, message, from_email, admin_email_list)
+    details = {"cancelled": serializer.data}
+    async_to_sync(channel_layer.group_send)(
+        sub, {
+            "type": "event",
+            "body": details
+        }
+    )
