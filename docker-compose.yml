@@ -24,7 +24,7 @@ services:
     env_file:
       - .env/api.env
       - .env/db.env
-    command: /bin/sh -c "celery -A tennis worker -B --loglevel INFO"
+    command: /bin/sh -c "celery -A tennis worker --loglevel INFO"
     depends_on:
       - api
       - db
