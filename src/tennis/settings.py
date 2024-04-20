@@ -16,6 +16,9 @@ from datetime import timedelta
 from celery.schedules import crontab
 from django.core.exceptions import ImproperlyConfigured
 
+
+AUTH_USER_MODEL = "accounts.User"
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -56,6 +59,7 @@ INSTALLED_APPS = [
     'accounts',
     'courts',
     'bookings',
+    'equipment'
 ]
 
 MIDDLEWARE = [
@@ -243,9 +247,9 @@ except KeyError as e:
 # GRAPHENE
 GRAPHENE = {
     'SCHEMA': 'tennis.schema.schema',
-    "MIDDLEWARE": [
-        "graphql_jwt.middleware.JSONWebTokenMiddleware",
-    ],
+    'MIDDLEWARE': [
+        "graphql_jwt.middleware.JSONWebTokenMiddleware"
+    ]
 }
 
 AUTHENTICATION_BACKENDS = [

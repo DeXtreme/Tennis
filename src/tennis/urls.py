@@ -21,6 +21,6 @@ from django.urls import path,include
 urlpatterns = [
     path('admin/', admin.site.urls),
     #path('accounts/', include("accounts.urls", namespace="accounts")),
-    path('courts/', include("courts.urls", namespace="courts")),
+    #path('courts/', include("courts.urls", namespace="courts")),
     path("graphql", csrf_exempt(GraphQLView.as_view()))
 ]

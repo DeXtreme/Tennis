@@ -1,12 +1,17 @@
 from django.contrib import admin
 
-from .models import Court,Worker
+from courts.models import Court,Worker
 
 
 @admin.register(Court)
 class CourtAdmin(admin.ModelAdmin):
-    pass
+    
+    list_display = ["name", "location", "open"]
+    search_fields = ["name", "location"]
+
+    ordering = ["name"]
 
 @admin.register(Worker)
 class WorkerAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["name", "email"]
+    search_fields = ["name"]

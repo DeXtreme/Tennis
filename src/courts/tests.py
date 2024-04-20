@@ -9,7 +9,7 @@ from rest_framework.test import APITestCase
 
 from accounts.models import Account
 from bookings.models import Booking
-from . import models
+from .models import court
 
 
 class CourtsViewSetTestCase(APITestCase):
@@ -23,7 +23,7 @@ class CourtsViewSetTestCase(APITestCase):
                                                     first_name="first",
                                                     last_name="last")
         
-        cls.court = models.Court.objects.create(name="Test court",
+        cls.court = court.Court.objects.create(name="Test court",
                                                 location="Test location",
                                                 open=time(8,0),
                                                 close=time(16,0))

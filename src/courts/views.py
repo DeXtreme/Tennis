@@ -2,13 +2,15 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import ListModelMixin,RetrieveModelMixin
 from drf_spectacular.utils import extend_schema
 
-from . import models,serializers
+from .models import court
+
+from . import serializers
 
 class CourtsViewSet(GenericViewSet,
                     ListModelMixin,
                     RetrieveModelMixin):
     
-    queryset = models.Court.objects.all()
+    queryset = court.Court.objects.all()
     lookup_field = "court_id"
 
 

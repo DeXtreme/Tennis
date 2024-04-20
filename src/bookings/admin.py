@@ -4,4 +4,4 @@ from .models import Booking
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["booking_id", "court", "start_time"]

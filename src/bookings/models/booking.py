@@ -8,7 +8,7 @@ from courts.models import Court
 class Booking(models.Model):
     """ Booking model """
 
-    booking_id = models.UUIDField(default=uuid.uuid4, primary_key=True)
+    booking_id = models.UUIDField(default=uuid.uuid4)
     court = models.ForeignKey(Court, on_delete=models.CASCADE, related_name="bookings")
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="bookings")
     start_time = models.DateTimeField()
@@ -18,4 +18,4 @@ class Booking(models.Model):
 
 
     def __str__(self):
-        return f"<Booking:{self.booking_id} | {self.start_time} | {self.duration} hours>"
+        return f"<Booking: {self.booking_id} | {self.start_time} | {self.duration} hours>"

@@ -40,14 +40,14 @@ def send_messages_on_save(sender, instance, created, **kwargs):
     
     if created: 
         tasks.send_confirmation.apply_async(args=(
-            booking.account.user.username,
+            booking.account.user.email,
             booking.court.name,
             booking.start_time,
             booking.duration
         ))
 
         tasks.send_reminders.apply_async(args=(
-            booking.account.user.username,
+            booking.account.user.email,
             booking.court.name,
             booking.start_time,
             booking.duration
@@ -58,7 +58,7 @@ def send_messages_on_save(sender, instance, created, **kwargs):
    
     else:
         tasks.send_booking_change.apply_async(args=(
-            booking.account.user.username,
+            booking.account.user.email,
             booking.court.name,
             booking.start_time,
             booking.duration
@@ -89,7 +89,7 @@ def send_messages_on_delete(sender, instance, **kwargs):
     booking = instance
     
     tasks.send_cancellation.apply_async(args=(
-            booking.account.user.username,
+            booking.account.user.email,
             booking.court.name,
             booking.start_time,
             booking.duration

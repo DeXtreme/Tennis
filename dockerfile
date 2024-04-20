@@ -1,6 +1,7 @@
 FROM python:3.10-slim-bullseye
 WORKDIR /api
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install pipenv
+COPY Pipfile.lock .
+RUN pipenv sync
 COPY src/ .
-CMD python manage.py migrate && python manage.py collectstatic --no-input && daphne -b 0.0.0.0 tennis.asgi:application
+CMD pipenv run python manage.py migrate && pipenv run python manage.py collectstatic --no-input && pipenv run daphne -b 0.0.0.0 tennis.asgi:application

@@ -11,24 +11,24 @@ services:
     env_file:
       - .env/api.env
       - .env/db.env
-    command: /bin/sh -c "python manage.py migrate && python manage.py collectstatic --no-input && python manage.py runserver 0.0.0.0:8000"
+    command: /bin/sh -c "pipenv run python manage.py migrate && pipenv run python manage.py collectstatic --no-input && pipenv run python manage.py runserver 0.0.0.0:8000"
     depends_on:
       - db
       - redis
   
-  worker:
-    build: .
-    container_name: tennis_worker
-    volumes:
-      - ./src:/api
-    env_file:
-      - .env/api.env
-      - .env/db.env
-    command: /bin/sh -c "celery -A tennis worker --loglevel INFO"
-    depends_on:
-      - api
-      - db
-      - redis
+  # worker:
+  #   build: .
+  #   container_name: tennis_worker
+  #   volumes:
+  #     - ./src:/api
+  #   env_file:
+  #     - .env/api.env
+  #     - .env/db.env
+  #   command: /bin/sh -c "celery -A tennis worker --loglevel INFO"
+  #   depends_on:
+  #     - api
+  #     - db
+  #     - redis
   
   db:
     image: postgres:14-bullseye
